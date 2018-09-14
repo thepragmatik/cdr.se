@@ -1,0 +1,3 @@
+store:
+  implementation: spike.cdr.store.MySQLCabTripStore
+  dataSourceConfiguration: src/test/resources/hikari.properties
