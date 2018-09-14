@@ -43,7 +43,8 @@ public final class Main {
     private static Routing createRouting() {
         return Routing.builder()
                 .register(JsonSupport.get())
-                .register("/greet", new GreetService())
+                //.register("/greet", new GreetService())
+                .register("/cabtrips", new CabService())
                 .build();
     }
 
