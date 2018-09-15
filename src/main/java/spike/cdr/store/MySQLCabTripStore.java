@@ -28,7 +28,8 @@ public class MySQLCabTripStore implements CabTripStore {
 		List<CabTrip> result = new ArrayList<>();
 
 		try (Connection connection = ds.getConnection();
-				ResultSet rs = connection.createStatement().executeQuery(SQL_GET_CAB_TRIP_COUNT_PER_MEDALLION);) {
+				ResultSet rs = connection.createStatement().executeQuery(String
+						.format(SQL_GET_CAB_TRIP_COUNT_PER_MEDALLION, forDate.toString(), getMedallions(cabs)));) {
 
 			int resultCount = 0;
 
