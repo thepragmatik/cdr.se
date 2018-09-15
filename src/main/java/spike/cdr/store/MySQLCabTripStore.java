@@ -32,11 +32,20 @@ public class MySQLCabTripStore implements CabTripStore {
 			Connection connection = ds.getConnection();
 
 			PreparedStatement pstmt = connection.prepareStatement(
-					"SELECT medallion, COUNT(*) FROM cab_trip_data WHERE medallion IN (?) AND DATE(pickup_datetime)=? GROUP BY medallion");
+					"SELECT medallion, COUNT(*) FROM cab_trip_data WHERE DATE(pickup_datetime)=? AND medallion IN ("
+							+ getValuePlaceholders(cabs) + ") GROUP BY medallion");
+
+			System.out.println(getValuePlaceholders(cabs));
+
+			pstmt.setObject(1, forDate.toString());
+
+			int index = 2;
+
+			for (String cab : cabs) {
+				pstmt.setString(index++, cab);
+			}
 
 			pstmt.setString(1, getMedallions(cabs));
-
-			pstmt.setObject(2, forDate.toString());
 
 //			System.out.println(getMedallions(cabs));
 //
@@ -81,6 +90,22 @@ public class MySQLCabTripStore implements CabTripStore {
 		}
 
 		return result;
+	}
+
+	private String getValuePlaceholders(List<String> cabs) {
+		StringBuilder sb = new StringBuilder();
+
+		cabs.forEach((c) -> {
+
+			if (sb.length() > 0) {
+				sb.append(",");
+			}
+
+			sb.append("?");
+
+		});
+
+		return sb.toString();
 	}
 
 	private String getMedallions(List<String> cabs) {
