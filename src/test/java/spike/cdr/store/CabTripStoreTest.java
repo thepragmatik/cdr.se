@@ -76,4 +76,16 @@ class CabTripStoreTest {
 //		});
 	}
 
+	@Test
+	void testCabTripCountIsZeroForThisYearsDate() throws SQLException {
+		LocalDate from = LocalDate.of(2018, 12, 03);
+
+		List<CabTrip> cabTrips = store.query(from,
+				List.of("00FD1D146C1899CEDB738490659CAD30", "FE4EC2CB0AC48EBE26EF3E489B91D941", "YADA-YADA-YA"));
+
+		Assertions.assertNotNull(cabTrips);
+
+		Assertions.assertTrue(cabTrips.size() == 0);
+	}
+
 }
