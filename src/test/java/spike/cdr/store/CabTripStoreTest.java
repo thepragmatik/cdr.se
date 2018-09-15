@@ -5,7 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -21,15 +21,23 @@ import io.helidon.config.MissingValueException;
 
 class CabTripStoreTest {
 
+	private static final String TEST_CONFIG_YAML = "src/test/resources/test-config.yaml";
+
+	private static final String CONF_KEY_IMPLEMENTATION = "implementation";
+
+	private static final String CONF_KEY_STORE = "store";
+
+	private static final String CONF_KEY_DATA_SOURCE_CONFIGURATION = "dataSourceConfiguration";
+
 	private static CabTripStore store;
 
 	@BeforeAll
 	static void initStore() {
-		Config testConfig = Config.from(ConfigSources.file("src/test/resources/test-config.yaml"));
+		Config testConfig = Config.from(ConfigSources.file(TEST_CONFIG_YAML));
 
-		final Config dbConfig = testConfig.get("store");
+		final Config dbConfig = testConfig.get(CONF_KEY_STORE);
 
-		String dataSourceConfiguration = dbConfig.get("dataSourceConfiguration").asString();
+		String dataSourceConfiguration = dbConfig.get(CONF_KEY_DATA_SOURCE_CONFIGURATION).asString();
 
 		final File dataSourceConfigFile = Paths.get(dataSourceConfiguration).toFile();
 
@@ -37,7 +45,8 @@ class CabTripStoreTest {
 
 		try {
 			@SuppressWarnings("unchecked")
-			Class<CabTripStore> klass = (Class<CabTripStore>) Class.forName(dbConfig.get("implementation").asString());
+			Class<CabTripStore> klass = (Class<CabTripStore>) Class
+					.forName(dbConfig.get(CONF_KEY_IMPLEMENTATION).asString());
 
 			Constructor<CabTripStore> declaredConstructor = klass.getDeclaredConstructor(DataSource.class);
 
@@ -53,15 +62,18 @@ class CabTripStoreTest {
 	@Test
 	void testCabTripCountIsGreaterThanZero() throws SQLException {
 
-		List<CabTrip> cabTrips = store.query(new Date(), List.of("YADA-YADA-YA"));
+		LocalDate from = LocalDate.of(2013, 12, 03);
+
+		List<CabTrip> cabTrips = store.query(from,
+				List.of("00FD1D146C1899CEDB738490659CAD30", "FE4EC2CB0AC48EBE26EF3E489B91D941", "YADA-YADA-YA"));
 
 		Assertions.assertNotNull(cabTrips);
 
 		Assertions.assertTrue(cabTrips.size() > 0);
 
-		cabTrips.forEach((c) -> {
-			System.out.println(c.toString());
-		});
+//		cabTrips.forEach((c) -> {
+//			System.out.println(c.toString());
+//		});
 	}
 
 }

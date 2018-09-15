@@ -4,8 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -22,7 +22,7 @@ public class MySQLCabTripStore implements CabTripStore {
 		this.ds = ds;
 	}
 
-	public List<CabTrip> query(Date forDate, List<String> cabs) throws StoreException {
+	public List<CabTrip> query(LocalDate forDate, List<String> cabs) throws StoreException {
 
 		List<CabTrip> result = new ArrayList<>();
 
@@ -32,14 +32,22 @@ public class MySQLCabTripStore implements CabTripStore {
 			Connection connection = ds.getConnection();
 
 			PreparedStatement pstmt = connection.prepareStatement(
-					"SELECT medallion, COUNT(*) FROM cab_trip_data WHERE pickup_datetime=? GROUP BY medallion");
+					"SELECT medallion, COUNT(*) FROM cab_trip_data WHERE medallion IN (?) AND DATE(pickup_datetime)=? GROUP BY medallion");
 
-			pstmt.setDate(1, new java.sql.Date(forDate.getTime()));
+			pstmt.setString(1, getMedallions(cabs));
+
+			pstmt.setObject(2, forDate.toString());
+
+//			System.out.println(getMedallions(cabs));
+//
+			System.out.println(pstmt.toString());
 
 			boolean returnedResultset = pstmt.execute();
 
 			if (returnedResultset) {
 				rs = pstmt.getResultSet();
+
+				int resultCount = 0;
 
 				while (rs.next()) {
 
@@ -48,11 +56,18 @@ public class MySQLCabTripStore implements CabTripStore {
 					int count = rs.getInt(2);
 
 					result.add(new CabTrip(medallion, count));
+
+					resultCount++;
 				}
+
+				System.out.println(String.format("Added %d results", resultCount));
+
 			}
 
 		} catch (SQLException e) {
+
 			throw new StoreException("Error querying database.", e);
+
 		} finally {
 			if (null != rs) {
 				try {
@@ -66,6 +81,24 @@ public class MySQLCabTripStore implements CabTripStore {
 		}
 
 		return result;
+	}
+
+	private String getMedallions(List<String> cabs) {
+
+		StringBuilder sb = new StringBuilder();
+
+		cabs.forEach((c) -> {
+
+			if (sb.length() > 0) {
+				sb.append(",");
+			}
+
+			sb.append("'");
+			sb.append(c);
+			sb.append("'");
+		});
+
+		return sb.toString();
 	}
 
 }

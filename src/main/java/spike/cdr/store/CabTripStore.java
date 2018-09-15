@@ -1,6 +1,6 @@
 package spike.cdr.store;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -9,6 +9,6 @@ import java.util.List;
  */
 public interface CabTripStore {
 
-	public List<CabTrip> query (Date forDate, List<String> cabs) throws StoreException;
+	public List<CabTrip> query (LocalDate forDate, List<String> cabs) throws StoreException;
 
 }
